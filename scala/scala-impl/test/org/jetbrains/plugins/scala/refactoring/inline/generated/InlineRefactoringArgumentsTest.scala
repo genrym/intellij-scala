@@ -22,4 +22,8 @@ class InlineRefactoringArgumentsTest extends InlineRefactoringTestBase {
 
   def testMethodWithMultipleNamedArguments() = doTest()
 
+  def testMethodWithFunctionCallAsParameter() = doTest()
+
+  def testMethodWithArgumentsWithDefaultValues() = doTest()
+
 }

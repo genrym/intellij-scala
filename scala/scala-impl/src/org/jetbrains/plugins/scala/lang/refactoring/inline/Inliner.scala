@@ -55,12 +55,27 @@ class Inliner(replacementValue: String) extends InlineHandler.Inliner {
   private def resolveParametersReplacements(call: ScMethodCall, function: ScFunctionDefinition) = {
     val parameters = function.parameters
     val paramsByName = parameters.map(parmeter => parmeter.name -> parmeter).toMap
-    (parameters zip call.argumentExpressions).map {
+    val paramNameToParameterWithReplacement = (parameters zip call.argumentExpressions).map {
       case (_, ScAssignStmt(argumentName, Some(argumentValue))) =>
         paramsByName(argumentName.getText) -> argumentValue
 
       case pair => pair
-    }
+    }.map {
+      case (parameter, replacement) =>
+        parameter.name -> (parameter, replacement)
+    }.toMap
+
+    val missingParametersWithDefaultValues =
+      parameters.filterNot(p => paramNameToParameterWithReplacement.keySet.contains(p.name))
+        .map(p => p -> (
+            p.getDefaultExpression match {
+              case Some(defaultValue) => defaultValue
+              case None => p
+            }
+          )
+        )
+
+    paramNameToParameterWithReplacement.values ++ missingParametersWithDefaultValues
   }
 
   override def getConflicts(reference: PsiReference, referenced: PsiElement): MultiMap[PsiElement, String] =
