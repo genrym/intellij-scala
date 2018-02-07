@@ -30,4 +30,11 @@ class InlineRefactoringArgumentsTest extends InlineRefactoringTestBase {
 
   def testMethodWithIfStmt() = doTest()
 
+  def testMetthodWithArgumentsInfixReference() = doTest()
+
+  def testMethodWithArgumentInfixAssociation() = doTest()
+
+  def tetsMethodWithArgumentsInfixMultiplication() = doTest()
+
+  def testMethodWithArgumentReferencedInStringInterpolation() = doTest()
 }
