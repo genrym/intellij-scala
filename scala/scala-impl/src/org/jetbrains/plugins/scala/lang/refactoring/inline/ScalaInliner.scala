@@ -37,12 +37,13 @@ class ScalaInliner(replacementValue: String) extends InlineHandler.Inliner {
       case function: ScFunctionDefinition =>
         replaceReferencesInFunctionBody(call, function)
         function.body.foreach { body =>
-          call match {
+          val newValue = call match {
             case expression: ScExpression =>
               expression.replaceExpression(body, removeParenthesis = true)
             case _ => call.replace(body)
           }
 
+          postProcess(newValue)
         }
       case _ => ()
     }
@@ -101,6 +102,10 @@ class ScalaInliner(replacementValue: String) extends InlineHandler.Inliner {
         replacement.replace(createTypeElementFromText(replacementValue))
     }
 
+    postProcess(newValue)
+  }
+
+  private def postProcess(newValue: PsiElement) = {
     val project = newValue.getProject
     val editor = FileEditorManager.getInstance(project).getSelectedTextEditor
     highlightOccurrences(Seq(newValue))(project, editor)
