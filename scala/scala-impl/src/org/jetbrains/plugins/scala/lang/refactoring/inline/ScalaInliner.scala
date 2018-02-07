@@ -14,14 +14,13 @@ import org.jetbrains.plugins.scala.lang.psi.api.base.ScInterpolatedStringLiteral
 import org.jetbrains.plugins.scala.lang.psi.api.base.types.ScTypeElement
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScAssignStmt, ScExpression, ScMethodCall}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.ScFunctionDefinition
-import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory.{createExpressionFromText, createTypeElementFromText}
 import org.jetbrains.plugins.scala.lang.refactoring.util.ScalaRefactoringUtil.highlightOccurrences
 import org.jetbrains.plugins.scala.project.ProjectContext
 
 import scala.collection.JavaConverters._
 
-class Inliner(replacementValue: String) extends InlineHandler.Inliner {
+class ScalaInliner(replacementValue: String) extends InlineHandler.Inliner {
 
   override def inlineUsage(usage: UsageInfo, referenced: PsiElement): Unit = {
     usage.getReference.getElement match {
@@ -37,8 +36,14 @@ class Inliner(replacementValue: String) extends InlineHandler.Inliner {
     referenced.copy match {
       case function: ScFunctionDefinition =>
         replaceReferencesInFunctionBody(call, function)
-        function.body.foreach(call.replace)
+        function.body.foreach { body =>
+          call match {
+            case expression: ScExpression =>
+              expression.replaceExpression(body, removeParenthesis = true)
+            case _ => call.replace(body)
+          }
 
+        }
       case _ => ()
     }
   }

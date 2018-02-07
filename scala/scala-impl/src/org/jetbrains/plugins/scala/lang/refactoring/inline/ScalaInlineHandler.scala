@@ -95,7 +95,7 @@ class ScalaInlineHandler extends InlineHandler {
         }
       case _ => return null
     }
-    new Inliner(replacementValue)
+    new ScalaInliner(replacementValue)
   }
 
 
@@ -167,13 +167,16 @@ class ScalaInlineHandler extends InlineHandler {
 
     implicit val project = element.projectContext
 
+    def isFunctionalType(typedDef: ScTypedDefinition) =
+      FunctionType.unapply(typedDef.`type`().getOrAny).exists(_._2.nonEmpty) &&
+        (typedDef match {
+          case _: ScFunctionDeclaration | _: ScFunctionDefinition => false
+          case _ => true
+        })
+
     element match {
-//      case typedDef: ScTypedDefinition if FunctionType.unapply(typedDef.`type`().getOrAny).exists(_._2.nonEmpty) =>
-//        val message = typedDef match {
-//          case _: ScFunctionDeclaration | _: ScFunctionDefinition => ScalaBundle.message("cannot.inline.function.with.parameters")
-//          case _ => ScalaBundle.message("cannot.inline.value.functional.type")
-//        }
-//        showErrorHint(message, "element")
+      case typedDef: ScTypedDefinition if isFunctionalType(typedDef) =>
+        showErrorHint(ScalaBundle.message("cannot.inline.value.functional.type"), "element")
       case named: ScNamedElement if named.getContainingFile != PsiDocumentManager.getInstance(editor.getProject).getPsiFile(editor.getDocument) =>
         showErrorHint(ScalaBundle.message("cannot.inline.different.files"), "element")
       case named: ScNamedElement if !usedInSameClassOnly(named) =>

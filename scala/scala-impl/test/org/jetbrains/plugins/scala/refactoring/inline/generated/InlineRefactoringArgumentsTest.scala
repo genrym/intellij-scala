@@ -26,4 +26,8 @@ class InlineRefactoringArgumentsTest extends InlineRefactoringTestBase {
 
   def testMethodWithArgumentsWithDefaultValues() = doTest()
 
+  def testMemberWithArguments() = doTest()
+
+  def testMethodWithIfStmt() = doTest()
+
 }
